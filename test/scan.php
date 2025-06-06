@@ -10,45 +10,60 @@
             font-family: 'Segoe UI', sans-serif;
             padding: 20px;
         }
-        h3 {
+        h2, h3 {
             color: #f0f0f0;
         }
         label {
-            display: block;
-            margin-top: 15px;
+            margin-right: 8px;
+        }
+        .inline-form {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         select, input[type="submit"] {
-            margin-top: 5px;
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 5px;
             border: none;
             font-size: 14px;
-        }
-        select {
             background-color: #2b2b3c;
-            color: #ffffff;
+            color: white;
         }
         input[type="submit"] {
             background-color: #3b82f6;
-            color: white;
             cursor: pointer;
-            margin-top: 15px;
         }
         input[type="submit"]:hover {
             background-color: #2563eb;
         }
         input[type="checkbox"] {
-            margin-right: 8px;
+            transform: scale(1.2);
+            margin-right: 10px;
         }
-        form {
-            margin-bottom: 30px;
+        .file-entry {
+            font-size: 16px;
+            margin-bottom: 6px;
         }
         hr {
             border: 0;
             border-top: 1px solid #444;
             margin: 20px 0;
         }
+        .select-all-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
     </style>
+    <script>
+        function toggleCheckboxes(source) {
+            const checkboxes = document.querySelectorAll('.file-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+    </script>
 </head>
 <body>
 
@@ -110,13 +125,13 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
 
 <h2>🛡️ Deteksi File Mencurigakan</h2>
 
-<form method="post">
-    <label for="days">📅 Pilih berapa hari ke belakang:</label>
+<form method="post" class="inline-form">
+    <label for="days">📅 Hari:</label>
     <select name="days" id="days">
         <?= renderDayOptions($daysBack); ?>
     </select>
 
-    <label for="extension">📁 Jenis file yang ingin dicari:</label>
+    <label for="extension">📁 File:</label>
     <select name="extension" id="extension">
         <?= renderExtensionOptions($extensionSelected); ?>
     </select>
@@ -130,16 +145,21 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete'])) {
     $foundFiles = scanFiles($scanDir, $extensionSelected, $keywordPattern, $daysBack);
 
-    echo "<h3>📂 Hasil Scan (File .$extensionSelected dalam $daysBack hari terakhir):</h3>";
+    echo "<h3>📂 File .$extensionSelected dalam $daysBack hari terakhir:</h3>";
     if (empty($foundFiles)) {
-        echo "✅ Tidak ada file mencurigakan ditemukan.";
+        echo "<p>✅ Tidak ada file mencurigakan ditemukan.</p>";
     } else {
         echo "<form method='post'>";
         echo "<input type='hidden' name='days' value='" . htmlspecialchars($daysBack) . "'>";
         echo "<input type='hidden' name='extension' value='" . htmlspecialchars($extensionSelected) . "'>";
+
+        echo "<label class='select-all-label'><input type='checkbox' onclick='toggleCheckboxes(this)'> Pilih Semua File</label>";
+
         foreach ($foundFiles as $file) {
-            echo "<input type='checkbox' name='delete_files[]' value='" . htmlspecialchars($file['path']) . "'> "
-                . htmlspecialchars($file['path']) . " <i>(Terakhir diubah: " . $file['date'] . ")</i><br>";
+            echo "<div class='file-entry'>";
+            echo "<label><input type='checkbox' class='file-checkbox' name='delete_files[]' value='" . htmlspecialchars($file['path']) . "'>"
+                . htmlspecialchars($file['path']) . " <i>(Diubah: " . $file['date'] . ")</i></label>";
+            echo "</div>";
         }
         echo "<input type='submit' name='delete' value='🗑️ Hapus File yang Dipilih'>";
         echo "</form>";
@@ -151,9 +171,9 @@ if (isset($_POST['delete']) && !empty($_POST['delete_files'])) {
     foreach ($_POST['delete_files'] as $fileToDelete) {
         if (file_exists($fileToDelete)) {
             unlink($fileToDelete);
-            echo "✅ Dihapus: " . htmlspecialchars($fileToDelete) . "<br>";
+            echo "✅ Dihapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         } else {
-            echo "⚠️ Gagal menghapus: " . htmlspecialchars($fileToDelete) . "<br>";
+            echo "⚠️ Gagal menghapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         }
     }
 }

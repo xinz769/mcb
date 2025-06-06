@@ -128,7 +128,7 @@ function scanFiles($dir, $extension, $patterns, $daysBack, $scanAll) {
 }
 ?>
 
-<h2>🛡️ Scanner File Mencurigakan</h2>
+<h2>🛡️Awas Kena Tebas Bestieeee</h2>
 
 <form method="post" class="inline-form">
     <label for="days">📅 Hari:</label>
@@ -169,19 +169,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete'])) {
                 . htmlspecialchars($file['path']) . " <i>(Diubah: " . $file['date'] . ")</i></label>";
             echo "</div>";
         }
-        echo "<input type='submit' name='delete' value='🗑️ Hapus File yang Dipilih'>";
+        echo "<input type='submit' name='delete' value='🗑️Tebassss'>";
         echo "</form>";
     }
 }
 
 if (isset($_POST['delete']) && !empty($_POST['delete_files'])) {
-    echo "<h3>📌 Hasil Penghapusan:</h3>";
+    echo "<h3>📌 Hasil Penebasan:</h3>";
     foreach ($_POST['delete_files'] as $fileToDelete) {
         if (file_exists($fileToDelete)) {
             unlink($fileToDelete);
-            echo "✅ Dihapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
+            echo "✅ Ditebas: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         } else {
-            echo "⚠️ Gagal menghapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
+            echo "⚠️ Gagal menebas: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         }
     }
 }

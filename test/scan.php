@@ -131,19 +131,19 @@ function scanFiles($dir, $extension, $patterns, $daysBack, $scanAll) {
 <h2>🛡️Awas Kena Tebas Bestieeee</h2>
 
 <form method="post" class="inline-form">
-    <label for="days">📅 Hari:</label>
+    <label for="days">📅Hari:</label>
     <select name="days" id="days">
         <?= renderDayOptions($daysBack); ?>
     </select>
 
-    <label for="extension">📁 File:</label>
+    <label for="extension">📁File:</label>
     <select name="extension" id="extension">
         <?= renderExtensionOptions($extensionSelected); ?>
     </select>
 
-    <label><input type="checkbox" name="scan_all" <?= $scanAll ? 'checked' : '' ?>> Scan Semua File Baru</label>
+    <label><input type="checkbox" name="scan_all" <?= $scanAll ? 'checked' : '' ?>> Scan All</label>
 
-    <input type="submit" value="🔍 Scan Sekarang">
+    <input type="submit" value="🔍Scan">
 </form>
 
 <hr>

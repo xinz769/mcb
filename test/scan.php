@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Scanner File Mencurigakan</title>
+    <title>Scanner by Xinz</title>
     <style>
         body {
             background-color: #1e1e2f;
@@ -123,7 +123,7 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
 }
 ?>
 
-<h2>🛡️ Deteksi File Mencurigakan</h2>
+<h2>🛡️ Shell Finder</h2>
 
 <form method="post" class="inline-form">
     <label for="days">📅 Hari:</label>
@@ -136,7 +136,7 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
         <?= renderExtensionOptions($extensionSelected); ?>
     </select>
 
-    <input type="submit" value="🔍 Scan Sekarang">
+    <input type="submit" value="🔍 Scan">
 </form>
 
 <hr>
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete'])) {
                 . htmlspecialchars($file['path']) . " <i>(Diubah: " . $file['date'] . ")</i></label>";
             echo "</div>";
         }
-        echo "<input type='submit' name='delete' value='🗑️ Hapus File yang Dipilih'>";
+        echo "<input type='submit' name='delete' value='🗑️ Tebas'>";
         echo "</form>";
     }
 }
@@ -171,7 +171,7 @@ if (isset($_POST['delete']) && !empty($_POST['delete_files'])) {
     foreach ($_POST['delete_files'] as $fileToDelete) {
         if (file_exists($fileToDelete)) {
             unlink($fileToDelete);
-            echo "✅ Dihapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
+            echo "✅ Ditebas: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         } else {
             echo "⚠️ Gagal menghapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         }

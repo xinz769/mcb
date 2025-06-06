@@ -1,13 +1,14 @@
 <?php
-$scanDir = __DIR__; // Bisa diubah ke folder target
-$extensionsToFind = ['php', 'txt']; // Ekstensi file yang dicari
-$keywordPattern = ['eval', 'base64_decode', 'shell_exec', 'gzinflate']; // Pola mencurigakan
-$daysBack = 3; // Ganti jumlah hari sesuai kebutuhan
+$scanDir = __DIR__; // Folder target
+$extensionsToFind = ['php', 'txt'];
+$keywordPattern = ['eval', 'base64_decode', 'shell_exec', 'gzinflate'];
+
+$daysBack = isset($_POST['days']) ? intval($_POST['days']) : 3; // Default 3 hari
 
 function scanFiles($dir, $extensions, $patterns, $daysBack) {
     $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
     $results = [];
-    $timeLimit = time() - ($daysBack * 86400); // Konversi hari ke detik
+    $timeLimit = time() - ($daysBack * 86400);
 
     foreach ($rii as $file) {
         if ($file->isDir()) continue;
@@ -32,27 +33,38 @@ function scanFiles($dir, $extensions, $patterns, $daysBack) {
 
     return $results;
 }
+?>
 
-$foundFiles = scanFiles($scanDir, $extensionsToFind, $keywordPattern, $daysBack);
+<form method="post">
+    <label for="days">Cari file mencurigakan dalam berapa hari terakhir:</label>
+    <input type="number" name="days" id="days" value="<?php echo htmlspecialchars($daysBack); ?>" min="1">
+    <input type="submit" value="Scan Sekarang">
+</form>
 
-echo "<h3>File mencurigakan dalam $daysBack hari terakhir:</h3>";
-if (empty($foundFiles)) {
-    echo "Tidak ada file mencurigakan ditemukan.";
-} else {
-    echo "<form method='post'>";
-    foreach ($foundFiles as $file) {
-        echo "<input type='checkbox' name='delete_files[]' value='" . htmlspecialchars($file['path']) . "'> "
-            . htmlspecialchars($file['path']) . " | Terakhir diubah: " . $file['date'] . "<br>";
+<?php
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $foundFiles = scanFiles($scanDir, $extensionsToFind, $keywordPattern, $daysBack);
+
+    echo "<h3>File mencurigakan dalam $daysBack hari terakhir:</h3>";
+    if (empty($foundFiles)) {
+        echo "Tidak ada file mencurigakan ditemukan.";
+    } else {
+        echo "<form method='post'>";
+        echo "<input type='hidden' name='days' value='" . htmlspecialchars($daysBack) . "'>";
+        foreach ($foundFiles as $file) {
+            echo "<input type='checkbox' name='delete_files[]' value='" . htmlspecialchars($file['path']) . "'> "
+                . htmlspecialchars($file['path']) . " | Terakhir diubah: " . $file['date'] . "<br>";
+        }
+        echo "<input type='submit' name='delete' value='Hapus File yang Dipilih'>";
+        echo "</form>";
     }
-    echo "<input type='submit' name='delete' value='Hapus File yang Dipilih'>";
-    echo "</form>";
 }
 
 if (isset($_POST['delete']) && !empty($_POST['delete_files'])) {
     foreach ($_POST['delete_files'] as $fileToDelete) {
         if (file_exists($fileToDelete)) {
             unlink($fileToDelete);
-            echo "Dihapus: " . htmlspecialchars($fileToDelete) . "<br>";
+            echo "✅ Dihapus: " . htmlspecialchars($fileToDelete) . "<br>";
         }
     }
 }

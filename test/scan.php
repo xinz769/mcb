@@ -72,7 +72,8 @@ $scanDir = __DIR__;
 $keywordPattern = ['eval', 'base64_decode', 'shell_exec', 'gzinflate'];
 
 $daysBack = isset($_POST['days']) ? intval($_POST['days']) : 1;
-$extensionSelected = isset($_POST['extension']) ? $_POST['extension'] : 'php';
+$extensionSelected = $_POST['extension'] ?? 'php';
+$scanAll = isset($_POST['scan_all']);
 
 function renderDayOptions($selected) {
     $html = "";
@@ -93,7 +94,7 @@ function renderExtensionOptions($selected) {
     return $html;
 }
 
-function scanFiles($dir, $extension, $patterns, $daysBack) {
+function scanFiles($dir, $extension, $patterns, $daysBack, $scanAll) {
     $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir));
     $results = [];
     $timeLimit = time() - ($daysBack * 86400);
@@ -105,14 +106,18 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
         if ($ext === $extension) {
             $lastModified = filemtime($file);
             if ($lastModified >= $timeLimit) {
-                $content = @file_get_contents($file);
-                foreach ($patterns as $pattern) {
-                    if (stripos($content, $pattern) !== false) {
-                        $results[] = [
-                            'path' => $file->getPathname(),
-                            'date' => date("Y-m-d H:i:s", $lastModified)
-                        ];
-                        break;
+                $path = $file->getPathname();
+                $date = date("Y-m-d H:i:s", $lastModified);
+
+                if ($scanAll) {
+                    $results[] = ['path' => $path, 'date' => $date];
+                } else {
+                    $content = @file_get_contents($path);
+                    foreach ($patterns as $pattern) {
+                        if (stripos($content, $pattern) !== false) {
+                            $results[] = ['path' => $path, 'date' => $date];
+                            break;
+                        }
                     }
                 }
             }
@@ -123,7 +128,7 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
 }
 ?>
 
-<h2>🛡️ Shell Finder</h2>
+<h2>🛡️ Scanner File Mencurigakan</h2>
 
 <form method="post" class="inline-form">
     <label for="days">📅 Hari:</label>
@@ -136,22 +141,25 @@ function scanFiles($dir, $extension, $patterns, $daysBack) {
         <?= renderExtensionOptions($extensionSelected); ?>
     </select>
 
-    <input type="submit" value="🔍 Scan">
+    <label><input type="checkbox" name="scan_all" <?= $scanAll ? 'checked' : '' ?>> Scan Semua File Baru</label>
+
+    <input type="submit" value="🔍 Scan Sekarang">
 </form>
 
 <hr>
 
 <?php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete'])) {
-    $foundFiles = scanFiles($scanDir, $extensionSelected, $keywordPattern, $daysBack);
+    $foundFiles = scanFiles($scanDir, $extensionSelected, $keywordPattern, $daysBack, $scanAll);
 
-    echo "<h3>📂 File .$extensionSelected dalam $daysBack hari terakhir:</h3>";
+    echo "<h3>📂 Hasil Scan (.$extensionSelected | {$daysBack} hari terakhir)</h3>";
     if (empty($foundFiles)) {
-        echo "<p>✅ Tidak ada file mencurigakan ditemukan.</p>";
+        echo "<p>✅ Tidak ada file ditemukan.</p>";
     } else {
         echo "<form method='post'>";
         echo "<input type='hidden' name='days' value='" . htmlspecialchars($daysBack) . "'>";
         echo "<input type='hidden' name='extension' value='" . htmlspecialchars($extensionSelected) . "'>";
+        if ($scanAll) echo "<input type='hidden' name='scan_all' value='1'>";
 
         echo "<label class='select-all-label'><input type='checkbox' onclick='toggleCheckboxes(this)'> Pilih Semua File</label>";
 
@@ -161,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete'])) {
                 . htmlspecialchars($file['path']) . " <i>(Diubah: " . $file['date'] . ")</i></label>";
             echo "</div>";
         }
-        echo "<input type='submit' name='delete' value='🗑️ Tebas'>";
+        echo "<input type='submit' name='delete' value='🗑️ Hapus File yang Dipilih'>";
         echo "</form>";
     }
 }
@@ -171,7 +179,7 @@ if (isset($_POST['delete']) && !empty($_POST['delete_files'])) {
     foreach ($_POST['delete_files'] as $fileToDelete) {
         if (file_exists($fileToDelete)) {
             unlink($fileToDelete);
-            echo "✅ Ditebas: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
+            echo "✅ Dihapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         } else {
             echo "⚠️ Gagal menghapus: <span class='file-entry'>" . htmlspecialchars($fileToDelete) . "</span><br>";
         }

